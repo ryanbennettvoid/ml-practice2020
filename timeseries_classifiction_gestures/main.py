@@ -96,7 +96,7 @@ model.compile(
   metrics=['accuracy']
 )
 
-model.fit(x_train, y_train, epochs=15, batch_size=128)
+model.fit(x_train, y_train, epochs=10, batch_size=32)
 
 _, accuracy = model.evaluate(x_test, y_test)
 
