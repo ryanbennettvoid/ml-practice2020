@@ -70,7 +70,7 @@ print('x shape:', x.shape)
 print('y shape:', y.shape)
 
 num_samples = len(x)
-num_train = int(math.floor(num_samples * 0.7))
+num_train = int(math.floor(num_samples * 0.9))
 num_test = num_samples - num_train
 x_train = x[:num_train]
 y_train = y[:num_train]
@@ -96,7 +96,7 @@ model.compile(
   metrics=['accuracy']
 )
 
-model.fit(x_train, y_train, epochs=10, batch_size=32)
+model.fit(x_train, y_train, epochs=15, batch_size=128)
 
 _, accuracy = model.evaluate(x_test, y_test)
 

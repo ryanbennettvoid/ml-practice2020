@@ -49,11 +49,14 @@ def get_all_data(limit=0):
   filepaths = get_filepaths()
   all_data = []
   for idx, filepath in enumerate(filepaths):
-    file_data = get_data_from_file(filepath)
-    for segment in list(file_data.values()):
-      all_data.append(segment)
-      if limit > 0 and len(all_data) >= limit:
-        return all_data
+    try:
+      file_data = get_data_from_file(filepath)
+      for segment in list(file_data.values()):
+        all_data.append(segment)
+        if limit > 0 and len(all_data) >= limit:
+          return all_data
+    except:
+      print('failed to parse file: ', filepath)
   return all_data
 
 def hot_one_arrays(np_arr):
