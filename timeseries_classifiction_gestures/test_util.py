@@ -41,10 +41,8 @@ def test_get_all_data_limit():
  assert len(result1[0]) > 0       # rows in segment
  assert len(result1[0][0]) == 10  # cols in row
 
-# def test_get_all_data_without_limit():
-#   result1 = get_all_data()
-#   assert len(result1) > 2         # segments
-#   assert len(result1[0]) > 0       # rows in segment
-#   assert len(result1[0][0]) == 10  # cols in row
+ result1 = get_all_data(limit=3)
+ assert len(result1) == 3         # segments
+ assert len(result1[0]) > 0       # rows in segment
+ assert len(result1[0][0]) == 10  # cols in row
 
-  

@@ -41,10 +41,10 @@ def get_data_from_file(filepath):
       if key not in data_dict:
         data_dict[key] = []
       data_dict[key].append(row.tolist())
-
+  print('loaded file: ', filepath)
   return data_dict
 
-# returns and array of all segments from all files
+# returns an array of all segments from all files
 def get_all_data(limit=0):
   filepaths = get_filepaths()
   all_data = []
@@ -56,4 +56,9 @@ def get_all_data(limit=0):
         return all_data
   return all_data
 
-  
+def hot_one_arrays(np_arr):
+  num_rows = int(np_arr.size)
+  num_cols = int(np_arr.max() + 1)
+  new_arr = np.zeros((num_rows, num_cols))
+  new_arr[np.arange(num_rows), np_arr] = 1
+  return new_arr
