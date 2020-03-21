@@ -4,10 +4,12 @@
 
 from keras.models import Sequential
 from keras.layers import Dense
-from keras.layers import Conv1D
+from keras.layers import Conv2D
 from keras.layers import Dropout
 from keras.layers import Flatten
-from keras.layers import MaxPooling1D
+from keras.layers import MaxPooling2D
+
+from scipy.ndimage.filters import gaussian_filter
 
 import math
 import numpy as np
@@ -16,10 +18,27 @@ from util import get_all_data
 from util import hot_one_arrays
 
 num_features = 8
+feature_depth=64
+
+def blur_array(arr):
+  return gaussian_filter(arr, sigma=2)
+
+# convert 1d array of normalized values to a 2d array
+def to_2d_arr(arr):
+  dim1_size = len(arr)
+  dim2_size = feature_depth
+
+  new_arr = np.zeros((dim1_size, dim2_size))
+  for idx, feature in enumerate(new_arr):
+    idx2 = int(math.floor(arr[idx] * dim2_size))
+    new_arr[idx][idx2] = 1
+
+  return new_arr
+
 
 # process data for usage with keras:
 # split into x/y and normalize
-def buildXY():
+def build_xy():
   data = np.array(get_all_data())
 
   num_timesteps = -1
@@ -36,7 +55,7 @@ def buildXY():
   x = []
   y = []
   for segment in data:
-    sample = np.empty((num_timesteps, num_features)).tolist()
+    sample = np.empty((num_timesteps, num_features, feature_depth))
     output = int(segment[0][9] - 1) # starts at 1 so offset to start at 0
 
     # populate samples with timesteps, timesteps with features
@@ -46,12 +65,12 @@ def buildXY():
         xMin = feature if feature < xMin else xMin
         xMax = feature if feature > xMax else xMax
       assert len(features) == num_features
-      sample[idx] = features
+      sample[idx] = blur_array(to_2d_arr(features))
 
     # populate remaining timesteps with zero-filled features
     remaining_start = len(segment)
     for idx in range(remaining_start, num_timesteps):
-      sample[idx] = np.zeros(num_features).tolist()
+      sample[idx] = np.zeros((num_features, feature_depth)).tolist()
 
     x.append(sample)
     y.append(output)
@@ -63,7 +82,7 @@ def buildXY():
 
   return x, y, xMin, xMax, num_timesteps
 
-x, y, xMin, xMax, num_timesteps = buildXY()
+x, y, xMin, xMax, num_timesteps = build_xy()
 num_classes = len(y[0])
 
 print('x shape:', x.shape)
@@ -82,10 +101,10 @@ print('num_test:', num_test)
 
 model = Sequential()
 
-model.add(Conv1D(filters=64, kernel_size=3, activation='relu', input_shape=(num_timesteps, num_features)))
-model.add(Conv1D(filters=64, kernel_size=3, activation='relu'))
+model.add(Conv2D(filters=64, kernel_size=(3, 3), activation='relu', input_shape=(num_timesteps, num_features, feature_depth)))
+model.add(Conv2D(filters=64, kernel_size=(3, 3), activation='relu'))
 model.add(Dropout(0.5))
-model.add(MaxPooling1D(pool_size=2))
+model.add(MaxPooling2D(pool_size=2))
 model.add(Flatten())
 model.add(Dense(100, activation='relu'))
 model.add(Dense(num_classes, activation='softmax'))
@@ -96,7 +115,7 @@ model.compile(
   metrics=['accuracy']
 )
 
-model.fit(x_train, y_train, epochs=10, batch_size=32)
+model.fit(x_train, y_train, epochs=10, batch_size=128)
 
 _, accuracy = model.evaluate(x_test, y_test)
 
