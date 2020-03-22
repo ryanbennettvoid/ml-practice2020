@@ -22,6 +22,7 @@ from util import one_hot_arrays
 from util import normalize_arr_3d
 from util import get_num_timesteps
 from util import load_xy, save_xy
+from util import clamp
 
 from constants import num_features
 
@@ -42,16 +43,16 @@ def build_xy():
     new_sample = np.empty((num_timesteps, num_features)).tolist()
     for idx in range(0, num_timesteps):
       if idx < old_sample_len:
-        new_sample[idx] = sample[idx][1:9] # features
+        new_sample[idx] = sample[idx][:num_features] # features
       else:
         new_sample[idx] = np.zeros(num_features).tolist()
 
-    output = sample[0][9] - 1 # starts at 1 so offset to start at 0
+    output = sample[0][num_features]
 
     x.append(new_sample)
     y.append(output)
 
-  x = normalize_arr_3d(x)
+  x = normalize_arr_3d(x, clamped=True)
   x = np.array(x, dtype=np.float32)
   y = np.array(y, dtype=np.uint8)
   y = one_hot_arrays(y)
@@ -67,7 +68,7 @@ except:
 num_timesteps = x.shape[1]
 num_classes = y.shape[1]
 num_samples = len(x)
-num_train = int(math.floor(num_samples * 0.9))
+num_train = int(math.floor(num_samples * 0.7))
 num_test = num_samples - num_train
 x_train = x[:num_train]
 y_train = y[:num_train]

@@ -4,10 +4,14 @@ from os import listdir
 from os.path import isfile, join
 
 import numpy as np
+import sklearn
 
 from constants import data_dir
 from constants import x_filename
 from constants import y_filename
+
+def clamp(n, smallest, largest):
+  return max(smallest, min(n, largest))
 
 # returns array of filepaths for all data files
 def get_filepaths():
@@ -74,22 +78,34 @@ def one_hot_arrays(np_arr):
   return new_arr
 
 # returns a normalized array for a given array
-def normalize_arr_3d(arr_3d):
-  val_min = sys.maxsize
-  val_max = -sys.maxsize
+def normalize_arr_3d(arr_3d, clamped=False):
+  num_samples = len(arr_3d)
+  num_timesteps = len(arr_3d[0])
+  num_features = len(arr_3d[0][0])
 
-  for d0, row in enumerate(arr_3d):
-    for d1, col in enumerate(row):
-      for d2, depth in enumerate(col):
-        current_val = arr_3d[d0][d1][d2]
-        val_min = min(val_min, current_val)
-        val_max = max(val_max, current_val)
+  col_min = np.zeros(num_features, dtype=np.float64)
+  col_min.fill(sys.maxsize)
+  col_max = np.zeros(num_features, dtype=np.float64)
+  col_max.fill(-sys.maxsize)
+  for sample in arr_3d:
+    for timestep in sample:
+      for idx, feature in enumerate(timestep):
+        current_value = feature
+        col_min[idx] = min(col_min[idx], feature)
+        col_max[idx] = max(col_max[idx], feature)
 
-  new_arr = np.array(arr_3d)
-  new_arr = (new_arr - val_min) / (val_max - val_min)
-
-  print('val_min', val_min)
-  print('val_max', val_max)
+  new_arr = np.empty((num_samples, num_timesteps, num_features), dtype=np.float64)
+  for d0,sample in enumerate(arr_3d):
+    for d1, timestep in enumerate(sample):
+      for idx, feature in enumerate(timestep):
+        feature_min = col_min[idx]
+        feature_max = col_max[idx]
+        normalized_feature = (feature - feature_min) / (feature_max - feature_min)
+        if clamped:
+          normalized_feature = clamp(normalized_feature, 0, 1)
+          assert normalized_feature >= 0
+          assert normalized_feature <= 1
+        new_arr[d0][d1][idx] = normalized_feature
   return new_arr
 
 # returns the max number of timesteps in an array of samples

@@ -18,4 +18,4 @@ num_data_files = 36 * 2
 x_filename = 'cache/x.npy'
 y_filename = 'cache/y.npy'
 
-num_features = 8
+num_features = 9
