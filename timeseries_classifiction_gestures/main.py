@@ -38,9 +38,13 @@ def build_xy():
   y = []
   for sample in data:
     # sample timestep idx has features from row
+    old_sample_len = len(sample)
     new_sample = np.empty((num_timesteps, num_features)).tolist()
-    for idx, row in enumerate(sample):
-      new_sample[idx] = row[1:9] # features
+    for idx in range(0, num_timesteps):
+      if idx < old_sample_len:
+        new_sample[idx] = sample[idx][1:9] # features
+      else:
+        new_sample[idx] = np.zeros(num_features).tolist()
 
     output = sample[0][9] - 1 # starts at 1 so offset to start at 0
 
