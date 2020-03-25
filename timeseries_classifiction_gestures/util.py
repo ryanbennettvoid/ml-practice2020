@@ -4,7 +4,7 @@ from os import listdir
 from os.path import isfile, join
 
 import numpy as np
-import sklearn
+import random
 
 from constants import data_dir
 from constants import x_filename
@@ -128,3 +128,6 @@ def save_xy(x, y):
   np.save(y_filename, y)
   num_samples = len(x)
   print('saved %s samples to cache' % num_samples)
+
+def seeded_shuffle(arr, seed):
+  random.Random(seed).shuffle(arr)

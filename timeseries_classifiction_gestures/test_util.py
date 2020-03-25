@@ -18,6 +18,7 @@ from util import get_data_from_file
 from util import get_all_data
 from util import normalize_arr_3d
 from util import get_num_timesteps
+from util import seeded_shuffle
 
 def test_get_filepaths():
   result = get_filepaths()
@@ -98,3 +99,55 @@ def test_get_num_timesteps():
   ]
   result = get_num_timesteps(arr)
   assert result == 4
+
+def test_seeded_shuffle():
+  arr1 = [1, 2, 3, 4, 5]
+  arr2 = [2, 4, 6, 8, 10]
+
+  seeded_shuffle(arr1, 4)
+  seeded_shuffle(arr2, 4)
+
+  assert arr1.index(1) == arr2.index(2)
+  assert arr1.index(2) == arr2.index(4)
+  assert arr1.index(3) == arr2.index(6)
+  assert arr1.index(4) == arr2.index(8)
+  assert arr1.index(5) == arr2.index(10)
+
+def test_seeded_shuffle_mismatch():
+  arr1 = [1, 2, 3, 4, 5]
+  arr2 = [2, 4, 6, 8, 10]
+
+  seeded_shuffle(arr1, 4)
+  seeded_shuffle(arr2, 5)
+
+  assert not (
+    arr1.index(1) == arr2.index(2) and 
+    arr1.index(2) == arr2.index(4) and 
+    arr1.index(3) == arr2.index(6) and 
+    arr1.index(4) == arr2.index(8) and 
+    arr1.index(5) == arr2.index(10)
+  )
+
+def test_seeded_shuffle_multidim():
+  arr1 = [[1, 2], [3, 4], [5, 6]]
+  arr2 = [[2, 4], [6, 8], [10, 12]]
+
+  seeded_shuffle(arr1, 4)
+  seeded_shuffle(arr2, 4)
+
+  assert arr1.index([1, 2]) == arr2.index([2, 4])
+  assert arr1.index([3, 4]) == arr2.index([6, 8])
+  assert arr1.index([5, 6]) == arr2.index([10, 12])
+
+def test_seeded_shuffle_multidim_mismatch():
+  arr1 = [[1, 2], [3, 4], [5, 6]]
+  arr2 = [[2, 4], [6, 8], [10, 12]]
+
+  seeded_shuffle(arr1, 4)
+  seeded_shuffle(arr2, 5)
+
+  assert not (
+    arr1.index([1, 2]) == arr2.index([2, 4]) and 
+    arr1.index([3, 4]) == arr2.index([6, 8]) and 
+    arr1.index([5, 6]) == arr2.index([10, 12])
+  )
